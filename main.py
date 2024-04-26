@@ -27,13 +27,6 @@ class QLearningAgent:
         # Otherwise, choose the action with the highest Q-value
         action = np.argmax(self.q_values[state])
         return action, state
-        '''
-        # Update epsilon-greedy exploration
-        if np.random.rand() < self.epsilon:
-            action = np.random.randint(0, 3)  # Choose random action
-        else:
-            action = np.argmax(self.q_values[state])  # Choose action with highest Q-value
-        return action, state        '''
     
     def update_epsilon(self):
         self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
@@ -158,7 +151,7 @@ def train_agent(agent, num_episodes):
 
     plt.figure(figsize=(20, 10))
     
-    plt.subplot(2, 5, 1)
+    plt.subplot(2, 4, 1)
     plt.plot(x, rewards, label='Total Reward')
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
@@ -166,21 +159,13 @@ def train_agent(agent, num_episodes):
     plt.title('Total rewards over all episodes in training')
     plt.legend()
 
-    plt.subplot(2, 5, 2)
-    plt.hist(rewards, bins=agent.board_size ** 2, color='skyblue', edgecolor='black')
+    plt.subplot(2, 4, 2)
+    plt.hist(rewards, bins=agent.board_size, color='skyblue', edgecolor='black')
     plt.title('Histogram of Episode Rewards')
     plt.xlabel('Episode Reward')
     plt.ylabel('Frequency')
 
-    # Plot epsilon decay
-    plt.subplot(2, 5, 3)
-    plt.plot(x, epsilons, label='Epsilon', linestyle='--')
-    plt.xlabel('Episode')
-    plt.ylabel('Epsilon Value')
-    plt.title('Epsilon Decay over all episodes in training')
-    plt.legend()
-
-    plt.subplot(2, 5, 4)
+    plt.subplot(2, 4, 3)
     plt.boxplot(rewards)
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
@@ -189,7 +174,7 @@ def train_agent(agent, num_episodes):
     plt.legend()
 
     print(wins)
-    plt.subplot(2, 5, 5)
+    plt.subplot(2, 4, 4)
     labels = ['Wins', 'Losses']
     sizes = [wins, num_episodes - wins]
     colors = ['lightgreen', 'lightcoral']
@@ -198,12 +183,21 @@ def train_agent(agent, num_episodes):
     plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
     plt.title('Wins vs. Losses (Board Size: {})'.format(agent.board_size))
 
+    ''' Plot epsilon decay
+    plt.subplot(2, 5, 3)
+    plt.plot(x, epsilons, label='Epsilon', linestyle='--')
+    plt.xlabel('Episode')
+    plt.ylabel('Epsilon Value')
+    plt.title('Epsilon Decay over all episodes in training')
+    plt.legend()
+    '''
+
     plt.show()
 
 def main():
     # Edit these values to adjust experiment
-    board_size = 3
-    number_of_episodes = 2000
+    board_size = 5
+    number_of_episodes = 100
 
     agent = QLearningAgent(board_size)
     train_agent(agent, number_of_episodes)
