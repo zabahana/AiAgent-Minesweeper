@@ -14,9 +14,8 @@ class QLearningAgent:
         self.epsilon_decay = epsilon_decay
 
     def take_action(self, state, board):
-        '''
         # Choose the action with the highest Q-value for the current state.
-        if board[state] > 0:  # If the cell has a number indicating adjacent mines
+        if board[state] > 0 and np.random.rand() < self.epsilon:  # If the cell has a number indicating adjacent mines
             # Check if the number of adjacent unrevealed cells matches the number of adjacent mines
             num_adjacent_unrevealed = np.sum(board[max(state[0] - 1, 0):min(state[0] + 2, self.board_size), max(state[1] - 1, 0):min(state[1] + 2, self.board_size)] == 0.5)
             if num_adjacent_unrevealed == board[state]:
@@ -29,13 +28,12 @@ class QLearningAgent:
         action = np.argmax(self.q_values[state])
         return action, state
         '''
-        
         # Update epsilon-greedy exploration
         if np.random.rand() < self.epsilon:
             action = np.random.randint(0, 3)  # Choose random action
         else:
             action = np.argmax(self.q_values[state])  # Choose action with highest Q-value
-        return action, state
+        return action, state        '''
     
     def update_epsilon(self):
         self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
@@ -110,7 +108,7 @@ def play_game(agent, board, board_size, max_moves=100):
                 board[state] = 0.5
                 uncovered_cell = state
         elif action == 1:  # Mark square as a mine
-            reward = 0.8  # Give a smaller positive reward for marking a square as a mine.
+            reward = 1  # Give a smaller positive reward for marking a square as a mine.
             # Mark the square as a mine.
             board[state] = -0.5
             uncovered_cell = None
@@ -150,11 +148,16 @@ def train_agent(agent, num_episodes):
     print("Median: ", median_value)
     print("Standard Deviation: ", stddev_value)
 
+    wins = 0
+    for reward in rewards:
+        if reward > agent.board_size ** 2 - 1:
+            wins += 1
+
     x = range(num_episodes)
 
-    # Plot total rewards
-    plt.figure(figsize=(10, 5))
-    plt.subplot(1, 2, 1)
+    plt.figure(figsize=(20, 10))
+    
+    plt.subplot(2, 4, 1)
     plt.plot(x, rewards, label='Total Reward')
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
@@ -162,14 +165,36 @@ def train_agent(agent, num_episodes):
     plt.title('Total rewards over all episodes in training')
     plt.legend()
 
+    plt.subplot(2, 4, 2)
+    plt.hist(rewards, bins=agent.board_size ** 2, color='skyblue', edgecolor='black')
+    plt.title('Histogram of Episode Rewards')
+    plt.xlabel('Episode Reward')
+    plt.ylabel('Frequency')
+
     # Plot epsilon decay
-    plt.subplot(1, 2, 2)
+    plt.subplot(2, 4, 3)
     plt.plot(x, epsilons, label='Epsilon', linestyle='--')
     plt.xlabel('Episode')
     plt.ylabel('Epsilon Value')
     plt.title('Epsilon Decay over all episodes in training')
     plt.legend()
 
+    plt.subplot(2, 4, 4)
+    plt.boxplot(rewards)
+    plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
+    plt.xlabel('Episode')
+    plt.ylabel('Value')
+    plt.title('Total rewards over all episodes in training')
+    plt.legend()
+
+     plt.subplot(2, 4, 4)
+    labels = ['Wins', 'Losses']
+    sizes = [wins, num_episodes - wins]
+    colors = ['lightgreen', 'lightcoral']
+    explode = (0.1, 0)  # explode the 'Wins' slice
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
+    plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+    plt.title('Wins vs. Losses (Board Size: {})'.format(agent.board_size))
 
     plt.show()
 
