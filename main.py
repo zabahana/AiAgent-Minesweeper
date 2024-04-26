@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import numpy as np
 
 class QLearningAgent:
@@ -73,7 +74,7 @@ def play_game(agent, board, max_moves=100):
 
     for coordinate in all_coordinates:
         if moves >= max_moves:
-            print("Maximum moves reached. Game over.")
+            #print("Maximum moves reached. Game over.")
             break
             
         # Uncover the box at the current coordinate
@@ -86,7 +87,7 @@ def play_game(agent, board, max_moves=100):
         action, next_state = agent.take_action(state, board)
         if action == 0:  # Uncover square
             if board[state] == -1:  # Mine
-                print("Game over! You hit a mine.")
+                #print("Game over! You hit a mine.");
                 break
             else:
                 reward = 1
@@ -113,19 +114,43 @@ def play_game(agent, board, max_moves=100):
         agent.update_q_values(state, action, reward, next_state)
 
         # Print reward for each iteration
-        print("Reward for current iteration:", reward)
+        # print("Reward for current iteration:", reward)
 
         # Print the board after each iteration
-        print_board(board, uncovered_cell)
+        # print_board(board, uncovered_cell)
 
         # Print total reward for each iteration
-        print("Total Reward for current iteration:", total_reward)
+        #print("Total Reward for current iteration:", total_reward)
 
         moves += 1
+    return total_reward
+
+def train_agent(agent, num_episodes):
+    rewards = np.array([])
+    for episode in range(num_episodes):
+        
+        episode_reward = play_game(agent, build_board())  # Play the game with the agent
+        rewards = np.append(rewards, episode_reward)
+        
+    mean_value = np.mean(rewards)
+    median_value = np.median(rewards)
+    stddev_value = np.std(rewards)
+
+    print("Episodes: ", num_episodes)
+    print("Mean: ", mean_value)
+    print("Median: ", median_value)
+    print("Standard Deviation: ", stddev_value)
+
+    x = range(num_episodes)
+    plt.plot(x, rewards)
+    plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
+    plt.xlabel('Episode')
+    plt.ylabel('Training total reward')
+    plt.title('Total rewards over all episodes in training') 
+    plt.show()
+
 
 # Create a Q-learning agent.
 agent = QLearningAgent(board_size=10)
 
-board = build_board()
-
-play_game(agent, board)
+train_agent(agent, num_episodes=2000)
