@@ -31,17 +31,17 @@ class QLearningAgent:
         updated_q_value = current_q_value + self.learning_rate * (reward + self.discount_factor * next_q_value - current_q_value)
         self.q_values[state][action] = updated_q_value
 
-def build_board():
-    # Create a 10x10 board with numbers indicating adjacent mines.
-    board = np.zeros((10, 10))
-    for i in range(10):
-        for j in range(10):
+def build_board(board_size):
+    # Create a board with numbers indicating adjacent mines.
+    board = np.zeros((board_size, board_size))
+    for i in range(board_size):
+        for j in range(board_size):
             if np.random.random() < 0.1:
                 board[i][j] = -1  # Mine
                 # Update adjacent cells
                 for dx in [-1, 0, 1]:
                     for dy in [-1, 0, 1]:
-                        if 0 <= i + dx < 10 and 0 <= j + dy < 10 and board[i + dx][j + dy] != -1:
+                        if 0 <= i + dx < board_size and 0 <= j + dy < board_size and board[i + dx][j + dy] != -1:
                             board[i + dx][j + dy] += 1
     return board
 
@@ -129,7 +129,7 @@ def train_agent(agent, num_episodes):
     rewards = np.array([])
     for episode in range(num_episodes):
         
-        episode_reward = play_game(agent, build_board())  # Play the game with the agent
+        episode_reward = play_game(agent, build_board(agent.board_size))  # Play the game with the agent
         rewards = np.append(rewards, episode_reward)
         
     mean_value = np.mean(rewards)
@@ -150,7 +150,13 @@ def train_agent(agent, num_episodes):
     plt.show()
 
 
-# Create a Q-learning agent.
-agent = QLearningAgent(board_size=10)
+def main():
+    # Edit these values to adjust experiment
+    board_size = 10
+    number_of_episodes = 100
+    
+    agent = QLearningAgent(board_size)
+    train_agent(agent, number_of_episodes)
 
-train_agent(agent, num_episodes=2000)
+if __name__ == "__main__":
+    main()
