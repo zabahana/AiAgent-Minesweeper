@@ -112,6 +112,7 @@ def play_game(agent, board, board_size, max_moves=100):
             # Mark the square as a mine.
             board[state] = -0.5
             uncovered_cell = None
+            reward = 1
         else:  # Move to an uncovered square.
             reward = 0
             # Find an adjacent uncovered square.
@@ -157,7 +158,7 @@ def train_agent(agent, num_episodes):
 
     plt.figure(figsize=(20, 10))
     
-    plt.subplot(2, 4, 1)
+    plt.subplot(2, 5, 1)
     plt.plot(x, rewards, label='Total Reward')
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
@@ -165,21 +166,21 @@ def train_agent(agent, num_episodes):
     plt.title('Total rewards over all episodes in training')
     plt.legend()
 
-    plt.subplot(2, 4, 2)
+    plt.subplot(2, 5, 2)
     plt.hist(rewards, bins=agent.board_size ** 2, color='skyblue', edgecolor='black')
     plt.title('Histogram of Episode Rewards')
     plt.xlabel('Episode Reward')
     plt.ylabel('Frequency')
 
     # Plot epsilon decay
-    plt.subplot(2, 4, 3)
+    plt.subplot(2, 5, 3)
     plt.plot(x, epsilons, label='Epsilon', linestyle='--')
     plt.xlabel('Episode')
     plt.ylabel('Epsilon Value')
     plt.title('Epsilon Decay over all episodes in training')
     plt.legend()
 
-    plt.subplot(2, 4, 4)
+    plt.subplot(2, 5, 4)
     plt.boxplot(rewards)
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
@@ -187,7 +188,8 @@ def train_agent(agent, num_episodes):
     plt.title('Total rewards over all episodes in training')
     plt.legend()
 
-     plt.subplot(2, 4, 4)
+    print(wins)
+    plt.subplot(2, 5, 5)
     labels = ['Wins', 'Losses']
     sizes = [wins, num_episodes - wins]
     colors = ['lightgreen', 'lightcoral']
