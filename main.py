@@ -3,13 +3,18 @@ import numpy as np
 
 class QLearningAgent:
 
-    def __init__(self, board_size, learning_rate=0.001, discount_factor=0.99):
+    def __init__(self, board_size, learning_rate=0.001, discount_factor=0.99, initial_epsilon=1.0, min_epsilon=0.1, epsilon_decay=0.999):
         self.board_size = board_size
         self.learning_rate = learning_rate
         self.discount_factor = discount_factor
         self.q_values = np.zeros((board_size, board_size, 3))
+        self.initial_epsilon = initial_epsilon
+        self.epsilon = initial_epsilon
+        self.min_epsilon = min_epsilon
+        self.epsilon_decay = epsilon_decay
 
     def take_action(self, state, board):
+        '''
         # Choose the action with the highest Q-value for the current state.
         if board[state] > 0:  # If the cell has a number indicating adjacent mines
             # Check if the number of adjacent unrevealed cells matches the number of adjacent mines
@@ -23,6 +28,17 @@ class QLearningAgent:
         # Otherwise, choose the action with the highest Q-value
         action = np.argmax(self.q_values[state])
         return action, state
+        '''
+        
+        # Update epsilon-greedy exploration
+        if np.random.rand() < self.epsilon:
+            action = np.random.randint(0, 3)  # Choose random action
+        else:
+            action = np.argmax(self.q_values[state])  # Choose action with highest Q-value
+        return action, state
+    
+    def update_epsilon(self):
+        self.epsilon = max(self.min_epsilon, self.epsilon * self.epsilon_decay)
 
     def update_q_values(self, state, action, reward, next_state):
         # Update the Q-value for the current state-action pair.
@@ -62,7 +78,7 @@ def print_board(board, uncovered_cell=None):
                 print(int(board[i][j]), end=" ")
         print()
 
-def play_game(agent, board, max_moves=100):
+def play_game(agent, board, board_size, max_moves=100):
     # Play the game until it is finished.
     state = (0, 0)
     total_reward = 0
@@ -74,7 +90,6 @@ def play_game(agent, board, max_moves=100):
 
     for coordinate in all_coordinates:
         if moves >= max_moves:
-            #print("Maximum moves reached. Game over.")
             break
             
         # Uncover the box at the current coordinate
@@ -112,25 +127,19 @@ def play_game(agent, board, max_moves=100):
         total_reward += reward
         # Update the Q-values based on the current state, action, reward, and next state.
         agent.update_q_values(state, action, reward, next_state)
-
-        # Print reward for each iteration
-        # print("Reward for current iteration:", reward)
-
-        # Print the board after each iteration
-        # print_board(board, uncovered_cell)
-
-        # Print total reward for each iteration
-        #print("Total Reward for current iteration:", total_reward)
-
         moves += 1
+
     return total_reward
 
 def train_agent(agent, num_episodes):
     rewards = np.array([])
+    epsilons = np.array([])
+
     for episode in range(num_episodes):
-        
-        episode_reward = play_game(agent, build_board(agent.board_size))  # Play the game with the agent
+        episode_reward = play_game(agent, build_board(agent.board_size), agent.board_size) 
         rewards = np.append(rewards, episode_reward)
+        epsilons = np.append(epsilons, agent.epsilon)  
+        agent.update_epsilon()  
         
     mean_value = np.mean(rewards)
     median_value = np.median(rewards)
@@ -142,19 +151,33 @@ def train_agent(agent, num_episodes):
     print("Standard Deviation: ", stddev_value)
 
     x = range(num_episodes)
-    plt.plot(x, rewards)
+
+    # Plot total rewards
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(x, rewards, label='Total Reward')
     plt.axhline(y=mean_value, color='r', linestyle='--', label='Mean Reward')
     plt.xlabel('Episode')
-    plt.ylabel('Training total reward')
-    plt.title('Total rewards over all episodes in training') 
-    plt.show()
+    plt.ylabel('Value')
+    plt.title('Total rewards over all episodes in training')
+    plt.legend()
 
+    # Plot epsilon decay
+    plt.subplot(1, 2, 2)
+    plt.plot(x, epsilons, label='Epsilon', linestyle='--')
+    plt.xlabel('Episode')
+    plt.ylabel('Epsilon Value')
+    plt.title('Epsilon Decay over all episodes in training')
+    plt.legend()
+
+
+    plt.show()
 
 def main():
     # Edit these values to adjust experiment
-    board_size = 10
-    number_of_episodes = 100
-    
+    board_size = 3
+    number_of_episodes = 2000
+
     agent = QLearningAgent(board_size)
     train_agent(agent, number_of_episodes)
 
